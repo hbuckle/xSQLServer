@@ -226,26 +226,8 @@ function Get-TargetResource
         $InstallSQLDataDir = $DBServer.InstallDataDirectory
         $SQLUserDBDir = $DBServer.DefaultFile
         $SQLUserDBLogDir = $DBServer.DefaultLog
-        #To do - don't hardcode this path
-        Import-Module "C:\Program Files (x86)\Microsoft SQL Server\110\Tools\PowerShell\Modules\SQLPS\SQLPS.PSD1"
-$query = @"
-SELECT 
-name AS [LogicalName]
-,physical_name AS [Location]
-,state_desc AS [Status]
-FROM sys.master_files
-WHERE database_id = DB_ID(N'tempdb');
-"@
-        if($InstanceName -eq "MSSQLSERVER")
-        {
-            $rows = Invoke-Sqlcmd -Query $query -ServerInstance "localhost"
-        }
-        else
-        {
-            $rows = Invoke-Sqlcmd -Query $query -ServerInstance "localhost\$InstanceName"
-        }
-        $SQLTempDBDir = Split-Path ($rows | Where-Object {$_.logicalname -match "tempdev"}).Location -Parent
-        $SQLTempDBLogDir = Split-Path ($rows | Where-Object {$_.logicalname -match "templog"}).Location -Parent
+#        $SQLTempDBDir = 
+#        $SQLTempDBLogDir = 
         $SQLBackupDir = $DBServer.BackupDirectory
     }
     if($Services | Where-Object {$_.Name -eq $FTServiceName})
@@ -262,7 +244,7 @@ WHERE database_id = DB_ID(N'tempdb');
     {
         $Features += "AS,"
         $ASSvcAccountUsername = (Get-WmiObject -Class Win32_Service | Where-Object {$_.Name -eq $ASServiceName}).StartName
-        $null = [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.AnalysisServices")
+        [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.AnalysisServices")
         $ASServer = New-Object Microsoft.AnalysisServices.Server
         if($InstanceName -eq "MSSQLSERVER")
         {
@@ -373,8 +355,8 @@ WHERE database_id = DB_ID(N'tempdb');
         InstallSQLDataDir = $InstallSQLDataDir
         SQLUserDBDir = $SQLUserDBDir
         SQLUserDBLogDir = $SQLUserDBLogDir
-        SQLTempDBDir = $SQLTempDBDir
-        SQLTempDBLogDir = $SQLTempDBLogDir
+#        SQLTempDBDir = $SQLTempDBDir
+#        SQLTempDBLogDir = $SQLTempDBLogDir
         SQLBackupDir = $SQLBackupDir
         FTSvcAccountUsername = $FTSvcAccountUsername
         RSSvcAccountUsername = $RSSvcAccountUsername

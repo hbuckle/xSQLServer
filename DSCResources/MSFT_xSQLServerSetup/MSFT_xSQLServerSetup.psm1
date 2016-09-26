@@ -286,6 +286,20 @@ WHERE database_id = DB_ID(N'tempdb');
         $ISSvcAccountUsername = (Get-WmiObject -Class Win32_Service | Where-Object {$_.Name -eq $ISServiceName}).StartName
     }
 
+    $configPath = "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\${SQLVersion}0\ConfigurationState"
+    if (Test-Path $configPath)
+    {
+        $connSetting = (Get-ItemProperty -Path $configPath).PSObject.Properties["Connectivity_Full"]
+        if ($connSetting -ne $null)
+        {
+            if ($connSetting.Value -eq 1)
+            {
+                $Features += "CONN,"
+                Write-Verbose "Connectivity services feature found"
+            }
+        }
+    }
+
     $Products = Get-WmiObject -Class Win32_Product
     switch($SQLVersion)
     {
